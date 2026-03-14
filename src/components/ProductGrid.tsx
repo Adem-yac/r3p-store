@@ -1,17 +1,52 @@
+import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
-const products = [
+const staticProducts = [
   { id: "1", name: "Hoodie Noir Oversize", price: 4500, oldPrice: 5900, image: product1, category: "Hoodies", isPromo: true },
   { id: "2", name: "Cargo Gris Streetwear", price: 3800, image: product2, category: "Pantalons" },
   { id: "3", name: "T-Shirt Blanc Oversize", price: 2200, oldPrice: 2900, image: product3, category: "T-Shirts", isPromo: true },
   { id: "4", name: "Bomber Jacket Noir", price: 6500, image: product4, category: "Vestes" },
 ];
 
+const fallbackImages: Record<string, string> = {
+  Hoodies: product1,
+  Pantalons: product2,
+  "T-Shirts": product3,
+  Vestes: product4,
+};
+
 const ProductGrid = () => {
+  const [products, setProducts] = useState<typeof staticProducts>(staticProducts);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, price, old_price, images, category, is_promo")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false });
+      if (data && data.length > 0) {
+        setProducts(
+          data.map((p) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            oldPrice: p.old_price ?? undefined,
+            image: p.images?.[0] || fallbackImages[p.category] || product1,
+            category: p.category,
+            isPromo: p.is_promo,
+          }))
+        );
+      }
+    };
+    fetchProducts();
+  }, []);
+
   return (
     <section className="bg-background px-6 py-16">
       <div className="container mx-auto">
