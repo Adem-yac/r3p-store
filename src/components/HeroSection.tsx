@@ -1,6 +1,9 @@
 import heroBg from "@/assets/hero-bg.jpg";
+import { useI18n } from "@/i18n";
 
 const HeroSection = () => {
+  const { t } = useI18n();
+
   return (
     <section className="relative h-screen w-full overflow-hidden">
       {/* Background image */}
@@ -28,7 +31,7 @@ const HeroSection = () => {
           href="#products"
           className="mt-8 font-heading text-xs tracking-widest uppercase border border-primary text-primary px-8 py-3 hover:bg-primary hover:text-primary-foreground transition-all duration-300"
         >
-          Découvrir
+          {t("hero_cta")}
         </a>
       </div>
     </section>

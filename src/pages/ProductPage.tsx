@@ -8,6 +8,7 @@ import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
+import { useI18n } from "@/i18n";
 
 // Fallback static data for demo products
 const staticProducts: Record<string, { name: string; price: number; oldPrice?: number; images: string[]; category: string; isPromo?: boolean; colors: string[]; description: string }> = {
@@ -35,6 +36,7 @@ interface ProductData {
 const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState("M");
@@ -108,12 +110,15 @@ const ProductPage = () => {
       <Navbar />
       <div className="pt-14">
         <div className="px-6 py-4 border-b border-border">
-          <div className="container mx-auto">
-            <Link to="/boutique" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-[11px] tracking-[0.2em] uppercase font-body">
-              <ChevronLeft size={12} strokeWidth={1.5} />
-              <span>Boutique</span>
-            </Link>
-          </div>
+        <div className="container mx-auto">
+          <Link
+            to="/broduit"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-[11px] tracking-[0.2em] uppercase font-body"
+          >
+            <ChevronLeft size={12} strokeWidth={1.5} />
+            <span>{t("product_back_to_shop")}</span>
+          </Link>
+        </div>
         </div>
 
         <div className="container mx-auto px-6">
@@ -179,7 +184,9 @@ const ProductPage = () => {
               {/* Color selector */}
               {product.colors.length > 0 && (
                 <div className="mb-6">
-                  <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Couleur</p>
+                  <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+                    {t("product_color")}
+                  </p>
                   <div className="flex gap-3">
                     {product.colors.map((color, i) => (
                       <button
@@ -198,7 +205,9 @@ const ProductPage = () => {
               {/* Size selector */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground">Taille</p>
+                  <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+                    {t("product_size")}
+                  </p>
                   <p className="font-heading text-sm text-foreground">{selectedSize}</p>
                 </div>
                 <div className="grid grid-cols-5 gap-2">
@@ -220,7 +229,9 @@ const ProductPage = () => {
 
               {/* Quantity */}
               <div className="mt-6">
-                <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">Quantité</p>
+                <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
+                  {t("product_quantity")}
+                </p>
                 <div className="flex items-center border border-border rounded-lg w-fit overflow-hidden">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -245,7 +256,7 @@ const ProductPage = () => {
                 onClick={handleOrder}
                 className="mt-8 w-full bg-accent text-accent-foreground font-heading text-xl tracking-[0.1em] py-5 rounded-lg hover:opacity-90 transition-all duration-300 flex items-center justify-center gap-3"
               >
-                Commander Maintenant
+                {t("product_cta")}
               </button>
             </div>
           </div>

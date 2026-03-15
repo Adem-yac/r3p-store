@@ -8,6 +8,7 @@ import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/i18n";
 
 const staticProducts = [
   { id: "1", name: "Hoodie Noir Oversize", price: 4500, oldPrice: 5900, image: product1, category: "Hoodies", isPromo: true },
@@ -27,6 +28,7 @@ const slugToCategory = (slug: string) =>
   slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
 const BoutiquePage = () => {
+  const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const categorySlug = searchParams.get("category")?.toLowerCase() || null;
   const [products, setProducts] = useState<typeof staticProducts>(staticProducts);
@@ -70,10 +72,10 @@ const BoutiquePage = () => {
         <div className="container mx-auto">
           <div className="line-accent mb-4" />
           <h1 className="font-heading text-5xl md:text-7xl text-foreground leading-none mb-2">
-            Broduit
+            {t("page_shop_title")}
           </h1>
           <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-12">
-            {products.length} produits
+            {products.length} {t("page_shop_count_suffix")}
           </p>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

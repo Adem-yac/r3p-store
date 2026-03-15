@@ -7,6 +7,7 @@ import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
+import { useI18n } from "@/i18n";
 
 const fallbackImages: Record<string, string> = {
   hoodies: product1,
@@ -16,6 +17,7 @@ const fallbackImages: Record<string, string> = {
 };
 
 const CollectionsPage = () => {
+  const { t } = useI18n();
   const [collections, setCollections] = useState<any[]>([]);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ const CollectionsPage = () => {
         <div className="container mx-auto">
           <div className="line-accent mb-4" />
           <h1 className="font-heading text-5xl md:text-7xl text-foreground leading-none mb-12">
-            Collections
+            {t("page_collections_title")}
           </h1>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
