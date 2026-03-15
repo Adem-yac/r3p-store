@@ -70,7 +70,7 @@ const BoutiquePage = () => {
         <div className="container mx-auto">
           <div className="line-accent mb-4" />
           <h1 className="font-heading text-5xl md:text-7xl text-foreground leading-none mb-2">
-            Boutique
+            Broduit
           </h1>
           <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-12">
             {products.length} produits

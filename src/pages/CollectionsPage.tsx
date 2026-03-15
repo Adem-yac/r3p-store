@@ -48,7 +48,7 @@ const CollectionsPage = () => {
             {displayCollections.map((col) => (
               <Link
                 key={col.slug}
-                to={`/boutique?category=${col.slug}`}
+                to={`/broduit?category=${col.slug}`}
                 className="group relative overflow-hidden aspect-[4/3] rounded-lg"
               >
                 <img
