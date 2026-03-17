@@ -5,18 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import product1 from "@/assets/product-1.jpg";
-import product2 from "@/assets/product-2.jpg";
-import product3 from "@/assets/product-3.jpg";
-import product4 from "@/assets/product-4.jpg";
 import { useI18n } from "@/i18n";
-
-// Fallback static data for demo products
-const staticProducts: Record<string, { name: string; price: number; oldPrice?: number; images: string[]; category: string; isPromo?: boolean; colors: string[]; description: string }> = {
-  "1": { name: "Hoodie Noir Oversize", price: 4500, oldPrice: 5900, images: [product1, product2], category: "Hoodies", isPromo: true, colors: ["#0a0a0a", "#f5f5f5", "#6b7280"], description: "Hoodie oversize en coton épais 380g, coupe droite tombante avec finition brossée intérieure." },
-  "2": { name: "Cargo Gris Streetwear", price: 3800, images: [product2, product3], category: "Pantalons", colors: ["#9ca3af", "#0a0a0a", "#d4c9a8"], description: "Pantalon cargo coupe décontractée avec poches latérales fonctionnelles. Taille élastiquée avec cordon." },
-  "3": { name: "T-Shirt Blanc Oversize", price: 2200, oldPrice: 2900, images: [product3, product1], category: "T-Shirts", isPromo: true, colors: ["#f5f5f5", "#0a0a0a"], description: "T-shirt oversize en coton 100% premium. Coupe drop shoulder, col renforcé." },
-  "4": { name: "Bomber Jacket Noir", price: 6500, images: [product4, product1], category: "Vestes", colors: ["#0a0a0a", "#3b3b3b"], description: "Bomber jacket en nylon avec doublure matelassée. Poches zippées, bords-côtes élastiques." },
-};
 
 const sizes = ["S", "M", "L", "XL", "XXL"];
 
@@ -62,12 +51,6 @@ const ProductPage = () => {
           description: data.description,
           sizes: data.sizes,
         });
-      } else {
-        // Fallback to static
-        const sp = staticProducts[id || "1"];
-        if (sp) {
-          setProduct({ id: id || "1", ...sp, sizes });
-        }
       }
       setLoading(false);
     };
@@ -133,6 +116,7 @@ const ProductPage = () => {
                 <img 
                   src={product.images[activeImage]} 
                   alt={product.name} 
+                  loading="lazy"
                   className="w-full aspect-[4/5] object-cover rounded-lg transition-transform duration-700 group-hover:scale-105" 
                 />
               </div>
@@ -147,7 +131,7 @@ const ProductPage = () => {
                         activeImage === i ? "border-accent" : "border-border hover:border-muted-foreground"
                       }`}
                     >
-                      <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
+                      <img src={img} alt={`${product.name} ${i + 1}`} loading="lazy" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>

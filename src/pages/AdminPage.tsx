@@ -334,8 +334,26 @@ const AdminPage = () => {
         <button type="button" onClick={resetProductForm} className="text-muted-foreground hover:text-foreground"><X size={18} /></button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nom du produit" required className={inputClass} />
-        <input value={newProduct.category} onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })} placeholder="Catégorie" required className={inputClass} />
+        <input
+          value={newProduct.name}
+          onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+          placeholder="Nom du produit"
+          required
+          className={inputClass}
+        />
+        <select
+          value={newProduct.category}
+          onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+          required
+          className={inputClass}
+        >
+          <option value="">Choisir une collection</option>
+          {collections.map((col) => (
+            <option key={col.id} value={col.slug}>
+              {col.name}
+            </option>
+          ))}
+        </select>
         <input type="number" value={newProduct.price} onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })} placeholder="Prix (DZD)" required className={inputClass} />
         <input type="number" value={newProduct.oldPrice} onChange={(e) => setNewProduct({ ...newProduct, oldPrice: e.target.value })} placeholder="Ancien prix (optionnel)" className={inputClass} />
       </div>
@@ -656,7 +674,7 @@ const AdminPage = () => {
               {products.length === 0 && <p className="text-muted-foreground font-body text-sm text-center py-10">Aucun produit</p>}
               {products.map((p) => (
                 <div key={p.id} className={`bg-card border rounded-lg p-4 flex items-center gap-4 transition-all ${editingProduct === p.id ? "border-accent" : "border-border"}`}>
-                  {p.images[0] && <img src={p.images[0]} alt={p.name} className="w-16 h-20 object-cover rounded-lg" />}
+                  {p.images[0] && <img src={p.images[0]} alt={p.name} loading="lazy" className="w-16 h-20 object-cover rounded-lg" />}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="font-heading text-lg text-foreground truncate">{p.name}</p>
@@ -720,7 +738,7 @@ const AdminPage = () => {
             {collections.map((col) => (
               <div key={col.id} className="bg-card border border-border rounded-xl p-5 flex items-center gap-5">
                 {col.image_url ? (
-                  <img src={col.image_url} alt={col.name} className="w-24 h-20 object-cover rounded-lg flex-shrink-0" />
+                  <img src={col.image_url} alt={col.name} loading="lazy" className="w-24 h-20 object-cover rounded-lg flex-shrink-0" />
                 ) : (
                   <div className="w-24 h-20 bg-muted rounded-lg flex items-center justify-center text-muted-foreground flex-shrink-0">
                     <Image size={24} strokeWidth={1} />

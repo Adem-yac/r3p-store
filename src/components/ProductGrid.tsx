@@ -5,13 +5,17 @@ import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/i18n";
 
-const staticProducts = [
-  { id: "1", name: "Hoodie Noir Oversize", price: 4500, oldPrice: 5900, image: product1, category: "Hoodies", isPromo: true },
-  { id: "2", name: "Cargo Gris Streetwear", price: 3800, image: product2, category: "Pantalons" },
-  { id: "3", name: "T-Shirt Blanc Oversize", price: 2200, oldPrice: 2900, image: product3, category: "T-Shirts", isPromo: true },
-  { id: "4", name: "Bomber Jacket Noir", price: 6500, image: product4, category: "Vestes" },
-];
+type GridProduct = {
+  id: string;
+  name: string;
+  price: number;
+  oldPrice?: number;
+  image: string;
+  category: string;
+  isPromo?: boolean;
+};
 
 const fallbackImages: Record<string, string> = {
   Hoodies: product1,
@@ -21,7 +25,8 @@ const fallbackImages: Record<string, string> = {
 };
 
 const ProductGrid = () => {
-  const [products, setProducts] = useState<typeof staticProducts>(staticProducts);
+  const [products, setProducts] = useState<GridProduct[]>([]);
+  const { t } = useI18n();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -42,6 +47,8 @@ const ProductGrid = () => {
             isPromo: p.is_promo,
           }))
         );
+      } else {
+        setProducts([]);
       }
     };
     fetchProducts();
@@ -55,7 +62,7 @@ const ProductGrid = () => {
           <div>
             <div className="line-accent mb-4" />
             <h2 className="font-heading text-5xl md:text-6xl text-foreground leading-none">
-              Nouveautés
+              {t("home_new_arrivals_title")}
             </h2>
           </div>
           <span className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground hidden md:block">

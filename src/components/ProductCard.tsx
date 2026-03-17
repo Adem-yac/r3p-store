@@ -23,6 +23,7 @@ const ProductCard = ({ id, name, price, oldPrice, image, category, isPromo }: Pr
         <img
           src={image}
           alt={name}
+          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
         {/* Hover overlay */}

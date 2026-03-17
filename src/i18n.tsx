@@ -26,6 +26,8 @@ const translations: Translations = {
 
   page_collections_title: { fr: "Collections", ar: "التشكيلات", en: "Collections" },
 
+  home_new_arrivals_title: { fr: "Nouveautés", ar: "الجديد", en: "New arrivals" },
+
   order_title: { fr: "Commander", ar: "إتمام الطلب", en: "Checkout" },
   order_back: { fr: "Retour", ar: "رجوع", en: "Back" },
   order_sent_title: { fr: "Commande Envoyée", ar: "تم إرسال الطلب", en: "Order Sent" },

@@ -10,12 +10,15 @@ import product4 from "@/assets/product-4.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n";
 
-const staticProducts = [
-  { id: "1", name: "Hoodie Noir Oversize", price: 4500, oldPrice: 5900, image: product1, category: "Hoodies", isPromo: true },
-  { id: "2", name: "Cargo Gris Streetwear", price: 3800, image: product2, category: "Pantalons" },
-  { id: "3", name: "T-Shirt Blanc Oversize", price: 2200, oldPrice: 2900, image: product3, category: "T-Shirts", isPromo: true },
-  { id: "4", name: "Bomber Jacket Noir", price: 6500, image: product4, category: "Vestes" },
-];
+type ShopProduct = {
+  id: string;
+  name: string;
+  price: number;
+  oldPrice?: number;
+  image: string;
+  category: string;
+  isPromo?: boolean;
+};
 
 const fallbackImages: Record<string, string> = {
   Hoodies: product1,
@@ -31,7 +34,7 @@ const BoutiquePage = () => {
   const { t } = useI18n();
   const [searchParams] = useSearchParams();
   const categorySlug = searchParams.get("category")?.toLowerCase() || null;
-  const [products, setProducts] = useState<typeof staticProducts>(staticProducts);
+  const [products, setProducts] = useState<ShopProduct[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -41,7 +44,7 @@ const BoutiquePage = () => {
         .eq("is_active", true)
         .order("created_at", { ascending: false });
       if (data && data.length > 0) {
-        let list = data.map((p) => ({
+        let list: ShopProduct[] = data.map((p) => ({
           id: p.id,
           name: p.name,
           price: p.price,
@@ -57,9 +60,8 @@ const BoutiquePage = () => {
           );
         }
         setProducts(list);
-      } else if (categorySlug) {
-        const categoryMatch = slugToCategory(categorySlug);
-        setProducts(staticProducts.filter((p) => p.category.toLowerCase().replace(/\s+/g, "-") === categorySlug || p.category === categoryMatch));
+      } else {
+        setProducts([]);
       }
     };
     fetchProducts();

@@ -56,6 +56,7 @@ const CollectionsPage = () => {
                 <img
                   src={col.image_url || fallbackImages[col.slug] || product1}
                   alt={col.name}
+                  loading="lazy"
                   className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-background/50 group-hover:bg-background/30 transition-colors duration-300" />
