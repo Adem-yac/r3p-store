@@ -210,6 +210,13 @@ const AdminPage = () => {
     toast.success("Statut mis à jour");
   };
 
+  const deleteOrder = async (id: string) => {
+    if (!confirm("Supprimer cette commande ?")) return;
+    await supabase.from("orders").delete().eq("id", id);
+    fetchAll();
+    toast.success("Commande supprimée");
+  };
+
   // === COLLECTIONS CRUD ===
   const handleAddCollection = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -640,14 +647,26 @@ const AdminPage = () => {
                         <p className="font-body text-[10px] text-muted-foreground">
                           <Hash size={10} className="inline" /> {order.id.slice(0, 8)} · {new Date(order.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                         </p>
-                        <select value={order.status} onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                          className="bg-muted border border-border rounded-lg px-3 py-2 text-foreground font-body text-xs focus:outline-none focus:border-accent">
-                          <option value="pending">En attente</option>
-                          <option value="confirmed">Confirmée</option>
-                          <option value="shipped">Expédiée</option>
-                          <option value="delivered">Livrée</option>
-                          <option value="cancelled">Annulée</option>
-                        </select>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={order.status}
+                            onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                            className="bg-muted border border-border rounded-lg px-3 py-2 text-foreground font-body text-xs focus:outline-none focus:border-accent"
+                          >
+                            <option value="pending">En attente</option>
+                            <option value="confirmed">Confirmée</option>
+                            <option value="shipped">Expédiée</option>
+                            <option value="delivered">Livrée</option>
+                            <option value="cancelled">Annulée</option>
+                          </select>
+                          <button
+                            onClick={() => deleteOrder(order.id)}
+                            className="text-muted-foreground hover:text-destructive transition-colors p-1.5"
+                            title="Supprimer la commande"
+                          >
+                            <Trash2 size={14} strokeWidth={1.5} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}

@@ -13,9 +13,9 @@ const OrderPage = () => {
   const [searchParams] = useSearchParams();
   const productName = searchParams.get("product") || "";
   const productPrice = Number(searchParams.get("price")) || 0;
-  const productSize = searchParams.get("size") || "M";
-  const productColor = searchParams.get("color") || "#000";
-  const productQuantity = Number(searchParams.get("quantity")) || 1;
+  const initialSize = searchParams.get("size") || "M";
+  const initialColor = searchParams.get("color") || "#000";
+  const initialQuantity = Number(searchParams.get("quantity")) || 1;
   const rawProductId = searchParams.get("productId") || null;
   const isUuid = rawProductId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawProductId);
   const productId = isUuid ? rawProductId : null;
@@ -30,6 +30,10 @@ const OrderPage = () => {
   const [promoApplied, setPromoApplied] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const [size, setSize] = useState(initialSize);
+  const [color, setColor] = useState(initialColor);
+  const [quantity, setQuantity] = useState(initialQuantity);
 
   const selectedWilaya = useMemo(
     () => wilayaShipping.find((w) => w.wilaya === wilaya),
@@ -47,7 +51,7 @@ const OrderPage = () => {
       : selectedWilaya.stopDesk
     : 0;
 
-  const totalProduct = productPrice * productQuantity;
+  const totalProduct = productPrice * quantity;
   const discountAmount = Math.round(totalProduct * (discount / 100));
   const totalFinal = totalProduct - discountAmount + shippingPrice;
 
@@ -83,9 +87,9 @@ const OrderPage = () => {
       product_id: productId,
       product_name: productName,
       product_price: productPrice,
-      quantity: productQuantity,
-      size: productSize,
-      color: productColor,
+      quantity,
+      size,
+      color,
       customer_name: nom.trim(),
       customer_phone: telephone.trim(),
       wilaya,
@@ -161,15 +165,86 @@ const OrderPage = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
             <form onSubmit={handleSubmit} className="lg:col-span-7 space-y-6">
-              {/* Product summary */}
-              <div className="bg-card border border-border rounded-lg p-5">
+              {/* Product summary + editable options */}
+              <div className="bg-card border border-border rounded-lg p-5 space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-4 h-4 rounded-full border border-border flex-shrink-0" style={{ backgroundColor: productColor }} />
+                  <div
+                    className="w-4 h-4 rounded-full border border-border flex-shrink-0"
+                    style={{ backgroundColor: color }}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-heading text-lg text-foreground truncate">{productName}</p>
-                    <p className="font-body text-xs text-muted-foreground">Taille: {productSize} · Qté: {productQuantity}</p>
+                    <p className="font-body text-xs text-muted-foreground">
+                      Taille: {size} · Qté: {quantity}
+                    </p>
                   </div>
-                  <p className="font-heading text-lg text-accent flex-shrink-0">{totalProduct.toLocaleString()} DZD</p>
+                  <p className="font-heading text-lg text-accent flex-shrink-0">
+                    {totalProduct.toLocaleString()} DZD
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  {/* Size selector */}
+                  <div>
+                    <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">
+                      Taille
+                    </p>
+                    <select
+                      value={size}
+                      onChange={(e) => setSize(e.target.value)}
+                      className="w-full bg-background border border-border rounded-lg px-3 py-2 text-foreground font-body text-sm focus:outline-none focus:border-accent"
+                    >
+                      {["S", "M", "L", "XL", "XXL"].map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Color selector */}
+                  <div>
+                    <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">
+                      Couleur
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={color}
+                        onChange={(e) => setColor(e.target.value)}
+                        className="w-10 h-10 rounded-full border border-border bg-transparent cursor-pointer"
+                      />
+                      <span className="font-body text-xs text-muted-foreground">
+                        {color.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Quantity selector */}
+                  <div>
+                    <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">
+                      Quantité
+                    </p>
+                    <div className="flex items-center border border-border rounded-lg w-fit overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        -
+                      </button>
+                      <span className="w-10 h-9 flex items-center justify-center text-foreground font-heading text-sm border-l border-r border-border">
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => q + 1)}
+                        className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -243,7 +318,7 @@ const OrderPage = () => {
                 </h3>
                 <div className="space-y-4 font-body text-sm">
                   <div className="flex justify-between text-muted-foreground">
-                    <span>{productName} × {productQuantity}</span>
+                    <span>{productName} × {quantity}</span>
                     <span className="text-foreground">{totalProduct.toLocaleString()} DZD</span>
                   </div>
                   {discountAmount > 0 && (
