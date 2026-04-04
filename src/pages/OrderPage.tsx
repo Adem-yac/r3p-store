@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { ChevronLeft, CheckCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
@@ -7,6 +7,14 @@ import { wilayaShipping, communesByWilaya } from "@/data/shipping";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
+
+function normalizeHex(c: string): string {
+  const s = c.trim().toLowerCase();
+  if (/^#[0-9a-f]{3}$/i.test(s)) {
+    return `#${s[1]}${s[1]}${s[2]}${s[2]}${s[3]}${s[3]}`;
+  }
+  return s;
+}
 
 const OrderPage = () => {
   const { t, lang } = useI18n();
@@ -34,6 +42,34 @@ const OrderPage = () => {
   const [size, setSize] = useState(initialSize);
   const [color, setColor] = useState(initialColor);
   const [quantity, setQuantity] = useState(initialQuantity);
+  const [productColors, setProductColors] = useState<string[] | null>(null);
+  const [colorsLoading, setColorsLoading] = useState(Boolean(productId));
+
+  useEffect(() => {
+    if (!productId) {
+      setProductColors(null);
+      setColorsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.from("products").select("colors").eq("id", productId).maybeSingle();
+      if (cancelled) return;
+      const cols = (data?.colors ?? []).filter((c): c is string => Boolean(c && String(c).trim()));
+      setProductColors(cols);
+      setColorsLoading(false);
+      const fromUrl = normalizeHex(initialColor);
+      if (cols.length === 1) {
+        setColor(cols[0]);
+      } else if (cols.length > 1) {
+        const match = cols.find((c) => normalizeHex(c) === fromUrl);
+        setColor(match ?? cols[0]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [productId, initialColor]);
 
   const selectedWilaya = useMemo(
     () => wilayaShipping.find((w) => w.wilaya === wilaya),
@@ -202,22 +238,62 @@ const OrderPage = () => {
                     </select>
                   </div>
 
-                  {/* Color selector */}
+                  {/* Color: palette du produit (pas de color picker libre) ; une seule couleur = affichage seul */}
                   <div>
                     <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-1">
                       Couleur
                     </p>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={color}
-                        onChange={(e) => setColor(e.target.value)}
-                        className="w-10 h-10 rounded-full border border-border bg-transparent cursor-pointer"
-                      />
-                      <span className="font-body text-xs text-muted-foreground">
-                        {color.toUpperCase()}
-                      </span>
-                    </div>
+                    {colorsLoading ? (
+                      <div className="h-10 w-full max-w-[140px] rounded-lg bg-muted animate-pulse" />
+                    ) : productId && productColors && productColors.length > 1 ? (
+                      <div className="flex flex-wrap items-center gap-2">
+                        {productColors.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setColor(c)}
+                            className={`w-10 h-10 rounded-full border-2 transition-all duration-200 shrink-0 ${
+                              normalizeHex(color) === normalizeHex(c)
+                                ? "border-accent scale-110"
+                                : "border-border hover:border-muted-foreground"
+                            }`}
+                            style={{ backgroundColor: c }}
+                            aria-label={`Couleur ${c}`}
+                          />
+                        ))}
+                        <span className="font-body text-xs text-muted-foreground">{color.toUpperCase()}</span>
+                      </div>
+                    ) : productId && productColors && productColors.length === 1 ? (
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-10 h-10 rounded-full border-2 border-border shrink-0"
+                          style={{ backgroundColor: productColors[0] }}
+                        />
+                        <span className="font-body text-xs text-muted-foreground">
+                          {productColors[0].toUpperCase()}
+                        </span>
+                      </div>
+                    ) : productId && productColors && productColors.length === 0 ? (
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-10 h-10 rounded-full border-2 border-border shrink-0"
+                          style={{ backgroundColor: color }}
+                        />
+                        <span className="font-body text-xs text-muted-foreground">{color.toUpperCase()}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={/^#[0-9a-f]{6}$/i.test(color) ? color : "#000000"}
+                          onChange={(e) => setColor(e.target.value)}
+                          className="w-10 h-10 rounded-full border border-border bg-transparent cursor-pointer"
+                        />
+                        <span className="font-body text-xs text-muted-foreground">
+                          {color.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Quantity selector */}

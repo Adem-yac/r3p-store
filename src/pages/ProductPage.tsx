@@ -171,18 +171,31 @@ const ProductPage = () => {
                   <p className="font-body text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-3">
                     {t("product_color")}
                   </p>
-                  <div className="flex gap-3">
-                    {product.colors.map((color, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setSelectedColor(i)}
-                        className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
-                          selectedColor === i ? "border-accent scale-110" : "border-border hover:border-muted-foreground"
-                        }`}
-                        style={{ backgroundColor: color }}
+                  {product.colors.length === 1 ? (
+                    <div className="flex items-center gap-3">
+                      <span
+                        className="w-10 h-10 rounded-full border-2 border-border shrink-0"
+                        style={{ backgroundColor: product.colors[0] }}
                       />
-                    ))}
-                  </div>
+                      <span className="font-body text-xs text-muted-foreground uppercase">
+                        {product.colors[0]}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex gap-3">
+                      {product.colors.map((color, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setSelectedColor(i)}
+                          className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
+                            selectedColor === i ? "border-accent scale-110" : "border-border hover:border-muted-foreground"
+                          }`}
+                          style={{ backgroundColor: color }}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
