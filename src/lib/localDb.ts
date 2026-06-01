@@ -118,11 +118,28 @@ const storage = {
 function seed() {
   const tables = ["products", "orders", "promo_codes", "collections", "page_views", "user_roles"];
   for (const t of tables) { if (!localStorage.getItem(STORAGE_PREFIX + t)) setTable(t, []); }
+
+  const now = new Date().toISOString();
+
   if (getTable("collections").length === 0) {
     const names = ["Hoodies", "Pantalons", "T-Shirts", "Vestes"];
     setTable("collections", names.map((n, i) => ({
-      id: genId(), name: n, slug: n.toLowerCase().replace(/\s+/g, "-"), image_url: "", display_order: i + 1, created_at: new Date().toISOString(),
+      id: genId(), name: n, slug: n.toLowerCase().replace(/\s+/g, "-"), image_url: "", display_order: i + 1, created_at: now,
     })));
+  }
+
+  if (getTable("products").length === 0) {
+    setTable("products", [
+      { id: genId(), name: "R3P Hoodie Noir", price: 3200, old_price: null, category: "Hoodies", description: "Hoodie en coton épais, coupe oversize, cordon de serrage ajustable.", colors: ["#0a0a0a", "#ffffff", "#8B0000"], sizes: ["S", "M", "L", "XL", "XXL"], images: [], is_promo: false, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P Hoodie Gris", price: 3200, old_price: 3800, category: "Hoodies", description: "Hoodie Gris chiné, pochette kangourou, finitions doublées.", colors: ["#808080", "#0a0a0a"], sizes: ["S", "M", "L", "XL", "XXL"], images: [], is_promo: true, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P Hoodie Rouge", price: 3400, old_price: null, category: "Hoodies", description: "Hoodie rouge flash, broderie R3P au centre, tissu 380gsm.", colors: ["#CC0000", "#0a0a0a"], sizes: ["M", "L", "XL"], images: [], is_promo: false, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P Cargo Pants Noir", price: 2800, old_price: null, category: "Pantalons", description: "Cargo ample, 6 poches, cordon aux chevilles, coton ripstop.", colors: ["#0a0a0a", "#2F4F2F"], sizes: ["S", "M", "L", "XL"], images: [], is_promo: false, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P Sweatpants Gris", price: 2400, old_price: 2900, category: "Pantalons", description: "Sweatpants ajustables, molleton bio, poche zippée.", colors: ["#808080", "#0a0a0a"], sizes: ["S", "M", "L", "XL", "XXL"], images: [], is_promo: true, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P T-Shirt Logo", price: 1800, old_price: null, category: "T-Shirts", description: "T-shirt coton peigné, logo R3P imprimé poitrine, coupe regular.", colors: ["#ffffff", "#0a0a0a", "#CC0000"], sizes: ["S", "M", "L", "XL", "XXL"], images: [], is_promo: false, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P T-Shirt Signature", price: 2000, old_price: null, category: "T-Shirts", description: "T-shirt manches longues, signature R3P dos, coton bio 240gsm.", colors: ["#0a0a0a", "#ffffff"], sizes: ["M", "L", "XL"], images: [], is_promo: false, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P Varsity Jacket", price: 5200, old_price: 6500, category: "Vestes", description: "Varsity en laine, manches cuir, patch R3P brodé, doublure satin.", colors: ["#0a0a0a", "#8B0000"], sizes: ["M", "L", "XL"], images: [], is_promo: true, is_active: true, created_at: now, updated_at: now },
+      { id: genId(), name: "R3P Bomber Noir", price: 4600, old_price: null, category: "Vestes", description: "Bomber satin, col côtelé, zip YKK, poche intérieure.", colors: ["#0a0a0a", "#2F4F2F"], sizes: ["S", "M", "L", "XL", "XXL"], images: [], is_promo: false, is_active: true, created_at: now, updated_at: now },
+    ]);
   }
 }
 
