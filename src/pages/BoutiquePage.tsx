@@ -7,7 +7,7 @@ import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
-import { supabase } from "@/integrations/supabase/client";
+import { localDb } from "@/lib/localDb";
 import { useI18n } from "@/i18n";
 
 type ShopProduct = {
@@ -38,7 +38,7 @@ const BoutiquePage = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data } = await supabase
+      const { data } = await localDb
         .from("products")
         .select("id, name, price, old_price, images, category, is_promo")
         .eq("is_active", true)

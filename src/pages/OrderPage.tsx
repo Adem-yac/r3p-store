@@ -4,7 +4,7 @@ import { ChevronLeft, CheckCircle } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { wilayaShipping, communesByWilaya } from "@/data/shipping";
-import { supabase } from "@/integrations/supabase/client";
+import { localDb } from "@/lib/localDb";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 
@@ -53,7 +53,7 @@ const OrderPage = () => {
     }
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.from("products").select("colors").eq("id", productId).maybeSingle();
+      const { data } = await localDb.from("products").select("colors").eq("id", productId).maybeSingle();
       if (cancelled) return;
       const cols = (data?.colors ?? []).filter((c): c is string => Boolean(c && String(c).trim()));
       setProductColors(cols);
@@ -93,7 +93,7 @@ const OrderPage = () => {
 
   const applyPromo = async () => {
     if (!promoCode.trim()) return;
-    const { data } = await supabase
+    const { data } = await localDb
       .from("promo_codes")
       .select("*")
       .eq("code", promoCode.toUpperCase())
@@ -119,7 +119,7 @@ const OrderPage = () => {
     if (!nom.trim() || !telephone.trim() || !wilaya || !commune) return;
     setSubmitting(true);
 
-    const { error } = await supabase.from("orders").insert({
+    const { error } = await localDb.from("orders").insert({
       product_id: productId,
       product_name: productName,
       product_price: productPrice,
@@ -145,7 +145,7 @@ const OrderPage = () => {
 
     // Increment promo code usage
     if (promoApplied && promoCode) {
-      await supabase.rpc("increment_promo_usage" as never, { promo_code: promoCode.toUpperCase() } as never).then(() => {});
+      await localDb.rpc("increment_promo_usage" as never, { promo_code: promoCode.toUpperCase() } as never).then(() => {});
     }
 
     setSubmitted(true);

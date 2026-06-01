@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { localDb } from "@/lib/localDb";
 import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
@@ -22,7 +22,7 @@ const CollectionsPage = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase.from("collections").select("*").order("display_order");
+      const { data } = await localDb.from("collections").select("*").order("display_order");
       if (data) setCollections(data);
     };
     fetch();

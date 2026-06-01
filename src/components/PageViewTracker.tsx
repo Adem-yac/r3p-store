@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { localDb } from "@/lib/localDb";
 
 const getSessionId = () => {
   let sid = sessionStorage.getItem("r3p_sid");
@@ -29,7 +29,7 @@ const PageViewTracker = () => {
         productName = h1?.textContent || null;
       }
 
-      await supabase.from("page_views").insert({
+      await localDb.from("page_views").insert({
         page: path,
         product_id: isUuid ? productId : null,
         product_name: productName,
