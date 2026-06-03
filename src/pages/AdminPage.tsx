@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { seedCatalogAsAdmin } from "@/lib/catalog";
 import { toast } from "sonner";
 import { LogOut, Package, ShoppingBag, Tag, Plus, Trash2, Eye, EyeOff, BarChart3, Sparkles, Users, Globe, RefreshCw, Image, Shuffle, Pencil, X, ChevronDown, ChevronUp, ArrowUpDown, Phone, MapPin, Calendar, CreditCard, Hash } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
@@ -70,6 +71,12 @@ const AdminPage = () => {
   };
 
   const fetchAll = async () => {
+    const { count } = await supabase.from("products").select("*", { count: "exact", head: true });
+    if (!count) {
+      const seeded = await seedCatalogAsAdmin();
+      if (seeded) toast.success("Catalogue initial créé (9 produits)");
+    }
+
     const [p, o, c, v, col] = await Promise.all([
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("orders").select("*").order("created_at", { ascending: false }),

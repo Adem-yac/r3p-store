@@ -4,6 +4,7 @@ import { ChevronLeft, Minus, Plus } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { tryServerCatalogBootstrap } from "@/lib/catalog";
 import product1 from "@/assets/product-1.jpg";
 import { useI18n } from "@/i18n";
 
@@ -35,7 +36,7 @@ const ProductPage = () => {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      // Try database first (only if id looks like a UUID)
+      await tryServerCatalogBootstrap();
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || "");
       const data = isUuid ? (await supabase.from("products").select("*").eq("id", id!).single()).data : null;
       if (data) {

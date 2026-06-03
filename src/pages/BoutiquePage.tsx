@@ -7,7 +7,7 @@ import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchActiveProducts } from "@/lib/catalog";
 import { useI18n } from "@/i18n";
 
 type ShopProduct = {
@@ -38,12 +38,8 @@ const BoutiquePage = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, price, old_price, images, category, is_promo")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-      if (data && data.length > 0) {
+      const { data } = await fetchActiveProducts();
+      if (data.length > 0) {
         let list: ShopProduct[] = data.map((p) => ({
           id: p.id,
           name: p.name,

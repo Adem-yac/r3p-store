@@ -37,7 +37,7 @@ const AdminLoginPage = () => {
     }
 
     if (!roleData) {
-      toast.error("Compte sans rôle admin. Créez l'admin via Supabase (voir SETUP.md).");
+      toast.error("Compte sans rôle admin. Voir supabase/bootstrap.sql dans le projet.");
       await supabase.auth.signOut();
       setLoading(false);
       return;

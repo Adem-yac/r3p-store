@@ -4,7 +4,7 @@ import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
-import { supabase } from "@/integrations/supabase/client";
+import { fetchActiveProducts } from "@/lib/catalog";
 import { useI18n } from "@/i18n";
 
 type GridProduct = {
@@ -26,23 +26,14 @@ const fallbackImages: Record<string, string> = {
 
 const ProductGrid = () => {
   const [products, setProducts] = useState<GridProduct[]>([]);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const { t } = useI18n();
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoadError(null);
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, price, old_price, images, category, is_promo")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false });
-      if (error) {
-        setLoadError(error.message);
-        setProducts([]);
-        return;
-      }
-      if (data && data.length > 0) {
+    (async () => {
+      setLoading(true);
+      const { data, error } = await fetchActiveProducts();
+      if (!error && data.length > 0) {
         setProducts(
           data.map((p) => ({
             id: p.id,
@@ -57,14 +48,13 @@ const ProductGrid = () => {
       } else {
         setProducts([]);
       }
-    };
-    fetchProducts();
+      setLoading(false);
+    })();
   }, []);
 
   return (
     <section className="bg-background px-6 py-16">
       <div className="container mx-auto">
-        {/* Section header */}
         <div className="flex items-end justify-between mb-10">
           <div>
             <div className="line-accent mb-4" />
@@ -77,13 +67,8 @@ const ProductGrid = () => {
           </span>
         </div>
 
-        {loadError && (
-          <p className="text-destructive font-body text-sm mb-6">Erreur API : {loadError}</p>
-        )}
-        {!loadError && products.length === 0 && (
-          <p className="text-muted-foreground font-body text-sm mb-6">
-            Aucun produit en base. Exécutez la migration SQL dans Supabase (fichier SETUP.md).
-          </p>
+        {loading && (
+          <p className="text-muted-foreground font-body text-sm mb-6">Chargement…</p>
         )}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -92,7 +77,6 @@ const ProductGrid = () => {
           ))}
         </div>
 
-        {/* Marquee strip */}
         <div className="mt-16 border-t border-b border-border py-3 overflow-hidden">
           <div className="animate-marquee whitespace-nowrap flex gap-12">
             {Array(4).fill(null).map((_, i) => (

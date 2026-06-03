@@ -271,6 +271,10 @@ export type Database = {
         Args: { promo_code: string }
         Returns: undefined
       }
+      seed_products_if_empty: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
