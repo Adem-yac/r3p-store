@@ -158,7 +158,7 @@ export const localDb = {
       limit: chain.limit.bind(chain),
       then: chain.then.bind(chain),
       insert: (row: any) => {
-        const newRow = { ...row, id: row.id || genId(), created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+        const newRow = { ...row, id: row.id || genId(), created_at: new Date().toISOString(), updated_at: new Date().toISOString(), is_active: row.is_active ?? true, sizes: row.sizes ?? [] };
         const d = getTable(table); d.push(newRow); setTable(table, d);
         return { data: newRow, error: null };
       },
