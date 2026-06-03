@@ -21,16 +21,15 @@ Exécutez **`supabase/bootstrap.sql`** dans le [SQL Editor](https://supabase.com
 
 Si le CRUD admin échoue, exécutez aussi `supabase/migrations/20260603160000_admin_crud_rls.sql`.
 
-Compte admin : **Authentication → Users** → Add user  
-- Email : `r3prabah23@r3p.store`  
-- Mot de passe : `rabah2002`  
-- Cocher **Auto Confirm User**  
+Compte admin `r3prabah23@r3p.store` / `rabah2002` :
 
-Puis SQL (remplacer l’UUID) :
+1. Si **email not confirmed** → exécutez **`supabase/confirm-admin.sql`** dans le SQL Editor  
+   (ou Dashboard → Users → votre user → **Confirm email**)
 
-```sql
-INSERT INTO public.user_roles (user_id, role) VALUES ('UUID', 'admin');
-```
+2. Ou à la création du user : cocher **Auto Confirm User**
+
+3. Désactiver la confirmation email (optionnel) :  
+   **Authentication → Providers → Email** → désactiver **Confirm email**
 
 ## Vercel
 

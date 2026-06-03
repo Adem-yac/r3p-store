@@ -20,11 +20,14 @@ const AdminLoginPage = () => {
       password,
     });
     if (error) {
-      toast.error(
-        error.message.includes("Invalid")
-          ? "Email ou mot de passe incorrect"
-          : error.message
-      );
+      const msg = error.message.toLowerCase();
+      if (msg.includes("email not confirmed") || msg.includes("not confirmed")) {
+        toast.error("Email non confirmé. Dans Supabase : Users → Confirm email, ou exécutez supabase/confirm-admin.sql");
+      } else if (msg.includes("invalid")) {
+        toast.error("Email ou mot de passe incorrect");
+      } else {
+        toast.error(error.message);
+      }
       setLoading(false);
       return;
     }

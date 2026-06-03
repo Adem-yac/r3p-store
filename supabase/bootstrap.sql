@@ -79,5 +79,5 @@ CREATE POLICY "Admins can manage collections" ON public.collections
   USING (public.has_role(auth.uid(), 'admin'))
   WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
--- Compte admin r3prabah23@r3p.store (Dashboard → Authentication → Users → Add user, Auto Confirm)
--- INSERT INTO public.user_roles (user_id, role) VALUES ('UUID-UTILISATEUR', 'admin');
+-- Email non confirmé ? Exécutez supabase/confirm-admin.sql
+-- Ou Dashboard → Authentication → Users → r3prabah23@r3p.store → Confirm email
