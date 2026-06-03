@@ -1,25 +1,18 @@
 /**
- * Ensures Vite/Supabase env vars exist before production build (Vercel, CI).
- * Set these in Vercel → Project → Settings → Environment Variables.
+ * Warns if Vite env vars are missing; build still succeeds using public defaults.
  */
-const required = ["VITE_SUPABASE_URL", "VITE_SUPABASE_PUBLISHABLE_KEY"];
-const missing = required.filter((key) => !process.env[key]?.trim());
+const hasUrl = Boolean(process.env.VITE_SUPABASE_URL?.trim());
+const hasKey = Boolean(process.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim());
 
-if (missing.length > 0) {
-  console.error("\n❌ Build aborted: missing environment variables:\n");
-  missing.forEach((key) => console.error(`   - ${key}`));
-  console.error(
-    "\nAdd them in Vercel: Project r3p-store → Settings → Environment Variables\n" +
-      "   VITE_SUPABASE_URL=https://cjonwneuqwcyoklezixt.supabase.co\n" +
-      "   VITE_SUPABASE_PUBLISHABLE_KEY=<your anon key from Supabase dashboard>\n"
-  );
-  process.exit(1);
-}
-
-if (!process.env.VITE_SUPABASE_URL.includes("cjonwneuqwcyoklezixt")) {
+if (!hasUrl || !hasKey) {
   console.warn(
-    "⚠️  VITE_SUPABASE_URL does not match project cjonwneuqwcyoklezixt — check Vercel env vars."
+    "\n⚠️  VITE_SUPABASE_* not set — using built-in defaults for project cjonwneuqwcyoklezixt.\n" +
+      "   For production, prefer Vercel → Settings → Environment Variables.\n"
   );
+} else if (!process.env.VITE_SUPABASE_URL.includes("cjonwneuqwcyoklezixt")) {
+  console.warn(
+    "⚠️  VITE_SUPABASE_URL does not match project cjonwneuqwcyoklezixt."
+  );
+} else {
+  console.log("✓ Supabase environment variables OK");
 }
-
-console.log("✓ Supabase environment variables OK");

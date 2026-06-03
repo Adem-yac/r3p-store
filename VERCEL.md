@@ -19,9 +19,13 @@ Dashboard Supabase → **Authentication → URL Configuration** :
 - **Site URL** : `https://r3p-store.vercel.app`
 - **Redirect URLs** : `https://r3p-store.vercel.app/**`
 
-## Migration SQL
+## Migration SQL (obligatoire — base vide sinon)
 
-Exécutez `supabase/migrations/20260603120000_fix_api_helpers.sql` dans le SQL Editor Supabase (promos, seed produits).
+Dans [SQL Editor Supabase](https://supabase.com/dashboard/project/cjonwneuqwcyoklezixt/sql/new), exécutez tout le fichier :
+
+`supabase/migrations/20260603120000_fix_api_helpers.sql`
+
+Sans cela : **0 produit** en ligne et les codes promo ne s’incrémentent pas.
 
 ## Déployer
 
