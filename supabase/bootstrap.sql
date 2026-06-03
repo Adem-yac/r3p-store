@@ -78,3 +78,6 @@ CREATE POLICY "Admins can manage collections" ON public.collections
   FOR ALL TO authenticated
   USING (public.has_role(auth.uid(), 'admin'))
   WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- Compte admin r3prabah23@r3p.store (Dashboard → Authentication → Users → Add user, Auto Confirm)
+-- INSERT INTO public.user_roles (user_id, role) VALUES ('UUID-UTILISATEUR', 'admin');
