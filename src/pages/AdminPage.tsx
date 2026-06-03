@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { seedCatalogAsAdmin } from "@/lib/catalog";
+import { handleDbError } from "@/lib/adminDb";
 import { toast } from "sonner";
 import { LogOut, Package, ShoppingBag, Tag, Plus, Trash2, Eye, EyeOff, BarChart3, Sparkles, Users, Globe, RefreshCw, Image, Shuffle, Pencil, X, ChevronDown, ChevronUp, ArrowUpDown, Phone, MapPin, Calendar, CreditCard, Hash } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
@@ -84,10 +85,14 @@ const AdminPage = () => {
       supabase.from("page_views").select("*").order("created_at", { ascending: false }).limit(500),
       supabase.from("collections").select("*").order("display_order"),
     ]);
-    if (p.data) setProducts(p.data);
-    if (o.data) setOrders(o.data);
-    if (c.data) setPromos(c.data);
-    if (col.data) setCollections(col.data);
+    if (p.error) toast.error("Produits : " + p.error.message);
+    else if (p.data) setProducts(p.data);
+    if (o.error) toast.error("Commandes : " + o.error.message);
+    else if (o.data) setOrders(o.data);
+    if (c.error) toast.error("Promos : " + c.error.message);
+    else if (c.data) setPromos(c.data);
+    if (col.error) toast.error("Collections : " + col.error.message);
+    else if (col.data) setCollections(col.data);
     if (v.data) {
       const views = v.data as any[];
       const uniqueSessions = new Set(views.map(x => x.session_id)).size;
@@ -130,29 +135,34 @@ const AdminPage = () => {
       const ext = file.name.split(".").pop();
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("products").upload(path, file);
-      if (!error) {
-        const { data: urlData } = supabase.storage.from("products").getPublicUrl(path);
-        urls.push(urlData.publicUrl);
+      if (error) {
+        toast.error("Image : " + error.message);
+        continue;
       }
+      const { data: urlData } = supabase.storage.from("products").getPublicUrl(path);
+      urls.push(urlData.publicUrl);
     }
     return urls;
   };
+
+  const defaultSizes = ["S", "M", "L", "XL", "XXL"];
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const imageUrls = await uploadImages(productImages);
     const { error } = await supabase.from("products").insert({
-      name: newProduct.name,
+      name: newProduct.name.trim(),
       price: Number(newProduct.price),
       old_price: newProduct.oldPrice ? Number(newProduct.oldPrice) : null,
-      category: newProduct.category,
-      description: newProduct.description,
-      colors: productColors.filter(c => c.trim()),
+      category: newProduct.category.trim(),
+      description: newProduct.description.trim(),
+      colors: productColors.filter((c) => c.trim()),
+      sizes: defaultSizes,
       images: imageUrls,
       is_promo: newProduct.isPromo,
+      is_active: true,
     });
-    if (error) { toast.error("Erreur: " + error.message); return; }
-    toast.success("Produit ajouté !");
+    if (!handleDbError(error, "Produit enregistré en base !")) return;
     resetProductForm();
     fetchAll();
   };
@@ -175,17 +185,16 @@ const AdminPage = () => {
       imageUrls = [...imageUrls, ...newUrls];
     }
     const { error } = await supabase.from("products").update({
-      name: newProduct.name,
+      name: newProduct.name.trim(),
       price: Number(newProduct.price),
       old_price: newProduct.oldPrice ? Number(newProduct.oldPrice) : null,
-      category: newProduct.category,
-      description: newProduct.description,
-      colors: productColors.filter(c => c.trim()),
+      category: newProduct.category.trim(),
+      description: newProduct.description.trim(),
+      colors: productColors.filter((c) => c.trim()),
       images: imageUrls,
       is_promo: newProduct.isPromo,
     }).eq("id", editingProduct);
-    if (error) { toast.error("Erreur: " + error.message); return; }
-    toast.success("Produit modifié !");
+    if (!handleDbError(error, "Produit mis à jour en base !")) return;
     resetProductForm();
     fetchAll();
   };
@@ -199,29 +208,26 @@ const AdminPage = () => {
   };
 
   const toggleProduct = async (id: string, active: boolean) => {
-    await supabase.from("products").update({ is_active: !active }).eq("id", id);
-    fetchAll();
+    const { error } = await supabase.from("products").update({ is_active: !active }).eq("id", id);
+    if (handleDbError(error, active ? "Produit désactivé" : "Produit activé")) fetchAll();
   };
 
   const deleteProduct = async (id: string) => {
     if (!confirm("Supprimer ce produit ?")) return;
-    await supabase.from("products").delete().eq("id", id);
-    fetchAll();
-    toast.success("Produit supprimé");
+    const { error } = await supabase.from("products").delete().eq("id", id);
+    if (handleDbError(error, "Produit supprimé de la base")) fetchAll();
   };
 
   // === ORDERS ===
   const updateOrderStatus = async (id: string, status: string) => {
-    await supabase.from("orders").update({ status }).eq("id", id);
-    fetchAll();
-    toast.success("Statut mis à jour");
+    const { error } = await supabase.from("orders").update({ status }).eq("id", id);
+    if (handleDbError(error, "Commande mise à jour en base")) fetchAll();
   };
 
   const deleteOrder = async (id: string) => {
     if (!confirm("Supprimer cette commande ?")) return;
-    await supabase.from("orders").delete().eq("id", id);
-    fetchAll();
-    toast.success("Commande supprimée");
+    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (handleDbError(error, "Commande supprimée de la base")) fetchAll();
   };
 
   // === COLLECTIONS CRUD ===
@@ -238,8 +244,7 @@ const AdminPage = () => {
       image_url: imageUrl,
       display_order: collections.length + 1,
     });
-    if (error) { toast.error("Erreur: " + error.message); return; }
-    toast.success("Collection ajoutée !");
+    if (!handleDbError(error, "Collection enregistrée en base !")) return;
     setNewCollection({ name: "", slug: "" });
     setNewCollectionImage(null);
     setShowAddCollection(false);
@@ -251,25 +256,24 @@ const AdminPage = () => {
     if (!file) return;
     const urls = await uploadImages([file]);
     if (urls.length === 0) return;
-    await supabase.from("collections").update({ image_url: urls[0] }).eq("id", id);
-    toast.success("Image mise à jour !");
+    const { error } = await supabase.from("collections").update({ image_url: urls[0] }).eq("id", id);
+    if (!handleDbError(error, "Image enregistrée en base")) return;
     setCollectionImages({ ...collectionImages, [id]: null });
     fetchAll();
   };
 
   const handleUpdateCollectionName = async (id: string) => {
     if (!editCollectionName.trim()) return;
-    await supabase.from("collections").update({ name: editCollectionName }).eq("id", id);
-    toast.success("Nom mis à jour !");
+    const { error } = await supabase.from("collections").update({ name: editCollectionName.trim() }).eq("id", id);
+    if (!handleDbError(error, "Collection mise à jour en base")) return;
     setEditingCollection(null);
     fetchAll();
   };
 
   const handleDeleteCollection = async (id: string) => {
     if (!confirm("Supprimer cette collection ?")) return;
-    await supabase.from("collections").delete().eq("id", id);
-    toast.success("Collection supprimée");
-    fetchAll();
+    const { error } = await supabase.from("collections").delete().eq("id", id);
+    if (handleDbError(error, "Collection supprimée de la base")) fetchAll();
   };
 
   // === PROMOS ===
@@ -283,22 +287,20 @@ const AdminPage = () => {
       expires_at: expiresAt.toISOString(),
       max_uses: newPromo.maxUses ? Number(newPromo.maxUses) : null,
     });
-    if (error) { toast.error("Erreur: " + error.message); return; }
-    toast.success("Code promo créé !");
+    if (!handleDbError(error, "Code promo enregistré en base !")) return;
     setNewPromo({ code: "", discount: "", days: "", maxUses: "" });
     fetchAll();
   };
 
   const togglePromo = async (id: string, active: boolean) => {
-    await supabase.from("promo_codes").update({ is_active: !active }).eq("id", id);
-    fetchAll();
+    const { error } = await supabase.from("promo_codes").update({ is_active: !active }).eq("id", id);
+    if (handleDbError(error, "Code promo mis à jour en base")) fetchAll();
   };
 
   const deletePromo = async (id: string) => {
     if (!confirm("Supprimer ce code promo ?")) return;
-    await supabase.from("promo_codes").delete().eq("id", id);
-    toast.success("Code promo supprimé");
-    fetchAll();
+    const { error } = await supabase.from("promo_codes").delete().eq("id", id);
+    if (handleDbError(error, "Code promo supprimé de la base")) fetchAll();
   };
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" /></div>;

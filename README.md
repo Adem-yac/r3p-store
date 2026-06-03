@@ -17,6 +17,9 @@ Exécutez **`supabase/bootstrap.sql`** dans le [SQL Editor](https://supabase.com
 - Crée les 9 produits du catalogue
 - Corrige la connexion admin
 - Active les promos
+- **Autorise le CRUD admin** (ajout/modif/suppression produits, commandes, promos, collections en base)
+
+Si le CRUD admin échoue, exécutez aussi `supabase/migrations/20260603160000_admin_crud_rls.sql`.
 
 Créez l’admin : **Authentication → Users** → `r3prabah23@r3p.store`, puis :
 
