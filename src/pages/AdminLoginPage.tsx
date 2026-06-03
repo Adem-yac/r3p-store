@@ -17,21 +17,27 @@ const AdminLoginPage = () => {
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      toast.error("Email ou mot de passe incorrect");
+      toast.error(error.message.includes("Invalid") ? "Email ou mot de passe incorrect" : error.message);
       setLoading(false);
       return;
     }
 
-    // Check admin role
-    const { data: roleData } = await supabase
+    const { data: roleData, error: roleError } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
       .eq("role", "admin")
       .maybeSingle();
 
+    if (roleError) {
+      toast.error("Erreur serveur : " + roleError.message);
+      await supabase.auth.signOut();
+      setLoading(false);
+      return;
+    }
+
     if (!roleData) {
-      toast.error("Accès refusé — vous n'êtes pas administrateur");
+      toast.error("Compte sans rôle admin. Créez l'admin via Supabase (voir SETUP.md).");
       await supabase.auth.signOut();
       setLoading(false);
       return;

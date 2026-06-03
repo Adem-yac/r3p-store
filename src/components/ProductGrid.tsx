@@ -26,15 +26,22 @@ const fallbackImages: Record<string, string> = {
 
 const ProductGrid = () => {
   const [products, setProducts] = useState<GridProduct[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data } = await supabase
+      setLoadError(null);
+      const { data, error } = await supabase
         .from("products")
         .select("id, name, price, old_price, images, category, is_promo")
         .eq("is_active", true)
         .order("created_at", { ascending: false });
+      if (error) {
+        setLoadError(error.message);
+        setProducts([]);
+        return;
+      }
       if (data && data.length > 0) {
         setProducts(
           data.map((p) => ({
@@ -70,7 +77,15 @@ const ProductGrid = () => {
           </span>
         </div>
 
-        {/* Grid — asymmetric: first item large, rest smaller */}
+        {loadError && (
+          <p className="text-destructive font-body text-sm mb-6">Erreur API : {loadError}</p>
+        )}
+        {!loadError && products.length === 0 && (
+          <p className="text-muted-foreground font-body text-sm mb-6">
+            Aucun produit en base. Exécutez la migration SQL dans Supabase (fichier SETUP.md).
+          </p>
+        )}
+
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           {products.map((product) => (
             <ProductCard key={product.id} {...product} />
