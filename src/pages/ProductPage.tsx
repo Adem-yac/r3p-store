@@ -4,7 +4,7 @@ import { ChevronLeft, Minus, Plus } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
-import { tryServerCatalogBootstrap } from "@/lib/catalog";
+import { tryServerCatalogBootstrap, getFallbackProductById } from "@/lib/catalog";
 import product1 from "@/assets/product-1.jpg";
 import { useI18n } from "@/i18n";
 
@@ -38,19 +38,39 @@ const ProductPage = () => {
     const fetchProduct = async () => {
       await tryServerCatalogBootstrap();
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || "");
-      const data = isUuid ? (await supabase.from("products").select("*").eq("id", id!).single()).data : null;
-      if (data) {
+      let row = isUuid ? (await supabase.from("products").select("*").eq("id", id!).maybeSingle()).data : null;
+      if (!row && id) {
+        const fallback = getFallbackProductById(id);
+        if (fallback) {
+          row = {
+            id: fallback.id,
+            name: fallback.name,
+            price: fallback.price,
+            old_price: fallback.old_price,
+            images: fallback.images,
+            category: fallback.category,
+            is_promo: fallback.is_promo,
+            colors: fallback.colors ?? ["#0a0a0a"],
+            description: fallback.description ?? "",
+            sizes: fallback.sizes ?? sizes,
+            created_at: "",
+            updated_at: "",
+            is_active: true,
+          };
+        }
+      }
+      if (row) {
         setProduct({
-          id: data.id,
-          name: data.name,
-          price: data.price,
-          oldPrice: data.old_price || undefined,
-          images: data.images.length > 0 ? data.images : [product1],
-          category: data.category,
-          isPromo: data.is_promo,
-          colors: data.colors,
-          description: data.description,
-          sizes: data.sizes,
+          id: row.id,
+          name: row.name,
+          price: row.price,
+          oldPrice: row.old_price || undefined,
+          images: row.images.length > 0 ? row.images : [product1],
+          category: row.category,
+          isPromo: row.is_promo,
+          colors: row.colors,
+          description: row.description,
+          sizes: row.sizes,
         });
       }
       setLoading(false);
