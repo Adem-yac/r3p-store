@@ -4,7 +4,7 @@ import product1 from "@/assets/product-1.jpg";
 import product2 from "@/assets/product-2.jpg";
 import product3 from "@/assets/product-3.jpg";
 import product4 from "@/assets/product-4.jpg";
-import { localDb } from "@/lib/localDb";
+import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n";
 
 type GridProduct = {
@@ -30,7 +30,7 @@ const ProductGrid = () => {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data } = await localDb
+      const { data } = await supabase
         .from("products")
         .select("id, name, price, old_price, images, category, is_promo")
         .eq("is_active", true)

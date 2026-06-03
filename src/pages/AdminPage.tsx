@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { localDb } from "@/lib/localDb";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { LogOut, Package, ShoppingBag, Tag, Plus, Trash2, Eye, EyeOff, BarChart3, Sparkles, Users, Globe, RefreshCw, Image, Shuffle, Pencil, X, ChevronDown, ChevronUp, ArrowUpDown, Phone, MapPin, Calendar, CreditCard, Hash } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
@@ -60,9 +60,9 @@ const AdminPage = () => {
   useEffect(() => { checkAdmin(); }, []);
 
   const checkAdmin = async () => {
-    const { data: { user } } = await localDb.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) { navigate("/r3padmin/login"); return; }
-    const { data } = await localDb.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
     if (!data) { navigate("/r3padmin/login"); return; }
     setIsAdmin(true);
     setLoading(false);
@@ -71,16 +71,16 @@ const AdminPage = () => {
 
   const fetchAll = async () => {
     const [p, o, c, v, col] = await Promise.all([
-      localDb.from("products").select("*").order("created_at", { ascending: false }),
-      localDb.from("orders").select("*").order("created_at", { ascending: false }),
-      localDb.from("promo_codes").select("*").order("created_at", { ascending: false }),
-      localDb.from("page_views").select("*").order("created_at", { ascending: false }).limit(500),
-      localDb.from("collections").select("*").order("display_order" as any),
+      supabase.from("products").select("*").order("created_at", { ascending: false }),
+      supabase.from("orders").select("*").order("created_at", { ascending: false }),
+      supabase.from("promo_codes").select("*").order("created_at", { ascending: false }),
+      supabase.from("page_views").select("*").order("created_at", { ascending: false }).limit(500),
+      supabase.from("collections").select("*").order("display_order"),
     ]);
     if (p.data) setProducts(p.data);
     if (o.data) setOrders(o.data);
     if (c.data) setPromos(c.data);
-    if ((col as any).data) setCollections((col as any).data);
+    if (col.data) setCollections(col.data);
     if (v.data) {
       const views = v.data as any[];
       const uniqueSessions = new Set(views.map(x => x.session_id)).size;
@@ -101,7 +101,7 @@ const AdminPage = () => {
     setInsightsLoading(true);
     setAiInsights(null);
     try {
-      const { data, error } = await localDb.functions.invoke("ai-insights");
+      const { data, error } = await supabase.functions.invoke("ai-insights");
       if (error) throw error;
       setAiInsights(data.insights);
     } catch (e: any) {
@@ -112,7 +112,7 @@ const AdminPage = () => {
   };
 
   const handleLogout = async () => {
-    await localDb.auth.signOut();
+    await supabase.auth.signOut();
     navigate("/r3padmin/login");
   };
 
@@ -122,9 +122,9 @@ const AdminPage = () => {
     for (const file of files) {
       const ext = file.name.split(".").pop();
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await localDb.storage.from("products").upload(path, file);
+      const { error } = await supabase.storage.from("products").upload(path, file);
       if (!error) {
-        const { data: urlData } = localDb.storage.from("products").getPublicUrl(path);
+        const { data: urlData } = supabase.storage.from("products").getPublicUrl(path);
         urls.push(urlData.publicUrl);
       }
     }
@@ -134,7 +134,7 @@ const AdminPage = () => {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     const imageUrls = await uploadImages(productImages);
-    const { error } = await localDb.from("products").insert({
+    const { error } = await supabase.from("products").insert({
       name: newProduct.name,
       price: Number(newProduct.price),
       old_price: newProduct.oldPrice ? Number(newProduct.oldPrice) : null,
@@ -167,7 +167,7 @@ const AdminPage = () => {
       const newUrls = await uploadImages(productImages);
       imageUrls = [...imageUrls, ...newUrls];
     }
-    const { error } = await localDb.from("products").update({
+    const { error } = await supabase.from("products").update({
       name: newProduct.name,
       price: Number(newProduct.price),
       old_price: newProduct.oldPrice ? Number(newProduct.oldPrice) : null,
@@ -192,27 +192,27 @@ const AdminPage = () => {
   };
 
   const toggleProduct = async (id: string, active: boolean) => {
-    await localDb.from("products").update({ is_active: !active }).eq("id", id);
+    await supabase.from("products").update({ is_active: !active }).eq("id", id);
     fetchAll();
   };
 
   const deleteProduct = async (id: string) => {
     if (!confirm("Supprimer ce produit ?")) return;
-    await localDb.from("products").delete().eq("id", id);
+    await supabase.from("products").delete().eq("id", id);
     fetchAll();
     toast.success("Produit supprimé");
   };
 
   // === ORDERS ===
   const updateOrderStatus = async (id: string, status: string) => {
-    await localDb.from("orders").update({ status }).eq("id", id);
+    await supabase.from("orders").update({ status }).eq("id", id);
     fetchAll();
     toast.success("Statut mis à jour");
   };
 
   const deleteOrder = async (id: string) => {
     if (!confirm("Supprimer cette commande ?")) return;
-    await localDb.from("orders").delete().eq("id", id);
+    await supabase.from("orders").delete().eq("id", id);
     fetchAll();
     toast.success("Commande supprimée");
   };
@@ -225,7 +225,7 @@ const AdminPage = () => {
       const urls = await uploadImages([newCollectionImage]);
       if (urls.length > 0) imageUrl = urls[0];
     }
-    const { error } = await (localDb.from("collections") as any).insert({
+    const { error } = await supabase.from("collections").insert({
       name: newCollection.name,
       slug: newCollection.slug.toLowerCase().replace(/\s+/g, "-"),
       image_url: imageUrl,
@@ -244,7 +244,7 @@ const AdminPage = () => {
     if (!file) return;
     const urls = await uploadImages([file]);
     if (urls.length === 0) return;
-    await (localDb.from("collections") as any).update({ image_url: urls[0] }).eq("id", id);
+    await supabase.from("collections").update({ image_url: urls[0] }).eq("id", id);
     toast.success("Image mise à jour !");
     setCollectionImages({ ...collectionImages, [id]: null });
     fetchAll();
@@ -252,7 +252,7 @@ const AdminPage = () => {
 
   const handleUpdateCollectionName = async (id: string) => {
     if (!editCollectionName.trim()) return;
-    await (localDb.from("collections") as any).update({ name: editCollectionName }).eq("id", id);
+    await supabase.from("collections").update({ name: editCollectionName }).eq("id", id);
     toast.success("Nom mis à jour !");
     setEditingCollection(null);
     fetchAll();
@@ -260,7 +260,7 @@ const AdminPage = () => {
 
   const handleDeleteCollection = async (id: string) => {
     if (!confirm("Supprimer cette collection ?")) return;
-    await (localDb.from("collections") as any).delete().eq("id", id);
+    await supabase.from("collections").delete().eq("id", id);
     toast.success("Collection supprimée");
     fetchAll();
   };
@@ -270,7 +270,7 @@ const AdminPage = () => {
     e.preventDefault();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + Number(newPromo.days));
-    const { error } = await localDb.from("promo_codes").insert({
+    const { error } = await supabase.from("promo_codes").insert({
       code: newPromo.code.toUpperCase(),
       discount_percent: Number(newPromo.discount),
       expires_at: expiresAt.toISOString(),
@@ -283,13 +283,13 @@ const AdminPage = () => {
   };
 
   const togglePromo = async (id: string, active: boolean) => {
-    await localDb.from("promo_codes").update({ is_active: !active }).eq("id", id);
+    await supabase.from("promo_codes").update({ is_active: !active }).eq("id", id);
     fetchAll();
   };
 
   const deletePromo = async (id: string) => {
     if (!confirm("Supprimer ce code promo ?")) return;
-    await localDb.from("promo_codes").delete().eq("id", id);
+    await supabase.from("promo_codes").delete().eq("id", id);
     toast.success("Code promo supprimé");
     fetchAll();
   };

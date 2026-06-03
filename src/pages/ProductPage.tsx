@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, Minus, Plus } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { localDb } from "@/lib/localDb";
+import { supabase } from "@/integrations/supabase/client";
 import product1 from "@/assets/product-1.jpg";
 import { useI18n } from "@/i18n";
 
@@ -37,7 +37,7 @@ const ProductPage = () => {
     const fetchProduct = async () => {
       // Try database first (only if id looks like a UUID)
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id || "");
-      const data = isUuid ? (await localDb.from("products").select("*").eq("id", id!).single()).data : null;
+      const data = isUuid ? (await supabase.from("products").select("*").eq("id", id!).single()).data : null;
       if (data) {
         setProduct({
           id: data.id,

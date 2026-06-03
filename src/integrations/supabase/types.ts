@@ -267,6 +267,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_promo_usage: {
+        Args: { promo_code: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"

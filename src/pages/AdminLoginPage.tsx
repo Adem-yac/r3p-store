@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { localDb } from "@/lib/localDb";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 
@@ -15,7 +15,7 @@ const AdminLoginPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { data, error } = await localDb.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       toast.error("Email ou mot de passe incorrect");
       setLoading(false);
@@ -23,7 +23,7 @@ const AdminLoginPage = () => {
     }
 
     // Check admin role
-    const { data: roleData } = await localDb
+    const { data: roleData } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", data.user.id)
@@ -32,7 +32,7 @@ const AdminLoginPage = () => {
 
     if (!roleData) {
       toast.error("Accès refusé — vous n'êtes pas administrateur");
-      await localDb.auth.signOut();
+      await supabase.auth.signOut();
       setLoading(false);
       return;
     }

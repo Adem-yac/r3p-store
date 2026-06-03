@@ -1,3 +1,4 @@
+/** @deprecated Use `supabase` from `@/integrations/supabase/client` instead. */
 const STORAGE_PREFIX = "r3p_";
 
 function getTable(name: string): any[] {
