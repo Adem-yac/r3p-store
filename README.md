@@ -21,7 +21,12 @@ Exécutez **`supabase/bootstrap.sql`** dans le [SQL Editor](https://supabase.com
 
 Si le CRUD admin échoue, exécutez aussi `supabase/migrations/20260603160000_admin_crud_rls.sql`.
 
-Créez l’admin : **Authentication → Users** → `r3prabah23@r3p.store`, puis :
+Compte admin : **Authentication → Users** → Add user  
+- Email : `r3prabah23@r3p.store`  
+- Mot de passe : `rabah2002`  
+- Cocher **Auto Confirm User**  
+
+Puis SQL (remplacer l’UUID) :
 
 ```sql
 INSERT INTO public.user_roles (user_id, role) VALUES ('UUID', 'admin');

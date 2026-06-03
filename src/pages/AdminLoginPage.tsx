@@ -8,32 +8,8 @@ const AdminLoginPage = () => {
   const [email, setEmail] = useState("r3prabah23@r3p.store");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const navigate = useNavigate();
   const { t } = useI18n();
-
-  const handleSignup = async () => {
-    if (!email.trim() || !password) {
-      toast.error("Email et mot de passe requis");
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
-    setLoading(false);
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    if (data.user) {
-      toast.success(
-        "Compte créé ! Connectez-vous. Si besoin, exécutez supabase/bootstrap.sql dans Supabase (trigger admin auto)."
-      );
-      setMode("login");
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +22,7 @@ const AdminLoginPage = () => {
     if (error) {
       toast.error(
         error.message.includes("Invalid")
-          ? "Compte introuvable. Cliquez « Créer le compte admin » ci-dessous."
+          ? "Email ou mot de passe incorrect"
           : error.message
       );
       setLoading(false);
@@ -61,16 +37,14 @@ const AdminLoginPage = () => {
       .maybeSingle();
 
     if (roleError) {
-      toast.error("Erreur serveur : " + roleError.message);
+      toast.error("Erreur : " + roleError.message);
       await supabase.auth.signOut();
       setLoading(false);
       return;
     }
 
     if (!roleData) {
-      toast.error(
-        "Pas encore admin. Exécutez supabase/bootstrap.sql dans Supabase, ou recréez le compte après ce SQL."
-      );
+      toast.error("Accès refusé — compte sans rôle administrateur");
       await supabase.auth.signOut();
       setLoading(false);
       return;
@@ -93,6 +67,7 @@ const AdminLoginPage = () => {
             onChange={(e) => setEmail(e.target.value)}
             placeholder={t("admin_email")}
             required
+            autoComplete="email"
             className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:border-accent transition-colors"
           />
           <input
@@ -101,6 +76,7 @@ const AdminLoginPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             placeholder={t("admin_password")}
             required
+            autoComplete="current-password"
             className="w-full bg-card border border-border rounded-lg px-4 py-3 text-foreground font-body text-sm placeholder:text-muted-foreground focus:outline-none focus:border-accent transition-colors"
           />
           <button
@@ -111,21 +87,6 @@ const AdminLoginPage = () => {
             {loading ? t("admin_login_button_loading") : t("admin_login_button")}
           </button>
         </form>
-
-        <button
-          type="button"
-          disabled={loading}
-          onClick={handleSignup}
-          className="w-full mt-3 border border-border text-muted-foreground font-heading text-sm tracking-wider py-3 rounded-lg hover:text-foreground hover:border-accent transition-all disabled:opacity-40"
-        >
-          Créer le compte admin (première fois)
-        </button>
-
-        <p className="mt-6 text-center text-muted-foreground font-body text-xs leading-relaxed">
-          Mot de passe oublié ou erreur ? Utilisez « Créer le compte admin », puis connectez-vous.
-          <br />
-          SQL une fois : fichier <code className="text-accent">supabase/bootstrap.sql</code>
-        </p>
       </div>
     </div>
   );
